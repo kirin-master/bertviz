@@ -34,4 +34,6 @@ Temporary Items
 .ipynb_checkpoints
 
 # Program Generate File
-notebooks/out.html
+notebooks/out_model.html
+notebooks/out_head.html
+notebooks/out_neuron.html
