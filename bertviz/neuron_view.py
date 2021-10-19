@@ -31,10 +31,8 @@ import uuid
 from collections import defaultdict
 
 import torch
-from IPython.core.display import display, HTML, Javascript
 
-
-def show(model, model_type, tokenizer, sentence_a, sentence_b=None, display_mode='dark', layer=None, head=None):
+def get_raw(model, model_type, tokenizer, sentence_a, sentence_b=None, display_mode='dark', layer=None, head=None, require_prefix = ""):
 
     # Generate unique div id to enable multiple visualizations in one notebook
 
@@ -65,9 +63,7 @@ def show(model, model_type, tokenizer, sentence_a, sentence_b=None, display_mode
               <div id='vis'></div>
             </div>
          """
-    # require.js must be imported for Colab or JupyterLab:
-    display(HTML('<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>'))
-    display(HTML(vis_html))
+    
     __location__ = os.path.realpath(
         os.path.join(os.getcwd(), os.path.dirname(__file__)))
     attn_data = get_attention(model, model_type, tokenizer, sentence_a, sentence_b, include_queries_and_keys=True)
@@ -84,7 +80,20 @@ def show(model, model_type, tokenizer, sentence_a, sentence_b=None, display_mode
         'head': head
     }
     vis_js = open(os.path.join(__location__, 'neuron_view.js')).read()
-    display(Javascript('window.bertviz_params = %s' % json.dumps(params)))
+    vis_js = vis_js.replace("PYTHON_REQUIRE_PREFIX", require_prefix)
+
+    params_js = 'window.bertviz_params = %s' % json.dumps(params)
+    return vis_html, vis_js, params_js
+
+def show(model, model_type, tokenizer, sentence_a, sentence_b=None, display_mode='dark', layer=None, head=None):
+    from IPython.core.display import display, HTML, Javascript
+    
+    vis_html, vis_js, params_js = get_raw(model, model_type, tokenizer, sentence_a, sentence_b, display_mode, layer, head)
+
+    # require.js must be imported for Colab or JupyterLab:
+    display(HTML('<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>'))
+    display(HTML(vis_html))
+    display(Javascript(params_js))
     display(Javascript(vis_js))
 
 

@@ -2,12 +2,10 @@ import json
 import os
 import uuid
 
-from IPython.core.display import display, HTML, Javascript
-
 from .util import format_special_chars, format_attention, num_layers, num_heads
 
 
-def model_view(
+def model_view_raw(
         attention=None,
         tokens=None,
         sentence_b_start=None,
@@ -19,7 +17,8 @@ def model_view(
         encoder_tokens=None,
         decoder_tokens=None,
         include_layers=None,
-        include_heads=None
+        include_heads=None,
+        require_prefix = ""
 ):
     """Render model view
 
@@ -219,10 +218,33 @@ def model_view(
         'total_heads': n_heads
     }
 
+    __location__ = os.path.realpath(
+        os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    vis_js = open(os.path.join(__location__, 'model_view.js')).read()
+    vis_js = vis_js.replace("PYTHON_PARAMS", json.dumps(params))
+    vis_js = vis_js.replace("PYTHON_REQUIRE_PREFIX", require_prefix)
+    
+    return vis_html, vis_js
+
+def model_view(
+        attention=None,
+        tokens=None,
+        sentence_b_start=None,
+        prettify_tokens=True,
+        display_mode="dark",
+        encoder_attention=None,
+        decoder_attention=None,
+        cross_attention=None,
+        encoder_tokens=None,
+        decoder_tokens=None,
+        include_layers=None,
+        include_heads=None
+):
+    from IPython.core.display import display, HTML, Javascript
+    
+    vis_html, vis_js = model_view_raw(attention,tokens,sentence_b_start,prettify_tokens,display_mode,encoder_attention,decoder_attention,cross_attention,encoder_tokens,decoder_tokens,include_layers,include_heads)
+
     # require.js must be imported for Colab or JupyterLab:
     display(HTML('<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>'))
     display(HTML(vis_html))
-    __location__ = os.path.realpath(
-        os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    vis_js = open(os.path.join(__location__, 'model_view.js')).read().replace("PYTHON_PARAMS", json.dumps(params))
     display(Javascript(vis_js))

@@ -2,12 +2,9 @@ import json
 import os
 import uuid
 
-from IPython.core.display import display, HTML, Javascript
-
 from .util import format_special_chars, format_attention, num_layers
 
-
-def head_view(
+def head_view_raw(
         attention=None,
         tokens=None,
         sentence_b_start=None,
@@ -19,7 +16,8 @@ def head_view(
         cross_attention=None,
         encoder_tokens=None,
         decoder_tokens=None,
-        include_layers = None
+        include_layers = None,
+        require_prefix = ""
 ):
     """Render head view
 
@@ -207,10 +205,33 @@ def head_view(
         'include_layers': include_layers
     }
 
+    __location__ = os.path.realpath(
+        os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    vis_js = open(os.path.join(__location__, 'head_view.js')).read()
+    vis_js = vis_js.replace("PYTHON_PARAMS", json.dumps(params))
+    vis_js = vis_js.replace("PYTHON_REQUIRE_PREFIX", require_prefix)
+
+    return vis_html, vis_js
+
+def head_view(
+        attention=None,
+        tokens=None,
+        sentence_b_start=None,
+        prettify_tokens=True,
+        layer=None,
+        heads=None,
+        encoder_attention=None,
+        decoder_attention=None,
+        cross_attention=None,
+        encoder_tokens=None,
+        decoder_tokens=None,
+        include_layers = None
+):
+    from IPython.core.display import display, HTML, Javascript
+
+    vis_html, vis_js = head_view_raw(attention,tokens,sentence_b_start,prettify_tokens,layer,heads,encoder_attention,decoder_attention,cross_attention,encoder_tokens,decoder_tokens,include_layers)
+
     # require.js must be imported for Colab or JupyterLab:
     display(HTML('<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>'))
     display(HTML(vis_html))
-    __location__ = os.path.realpath(
-        os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    vis_js = open(os.path.join(__location__, 'head_view.js')).read().replace("PYTHON_PARAMS", json.dumps(params))
     display(Javascript(vis_js))
