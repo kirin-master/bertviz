@@ -22,7 +22,7 @@ require.config({
 requirejs(['jquery', 'd3'],
   function ($, d3) {
 
-    const params = window.bertviz_params
+    const params = PYTHON_PARAMS; // HACK: PYTHON_PARAMS is a template marker that is replaced by actual params.
     const config = {};
     initialize();
 

@@ -80,20 +80,19 @@ def get_raw(model, model_type, tokenizer, sentence_a, sentence_b=None, display_m
         'head': head
     }
     vis_js = open(os.path.join(__location__, 'neuron_view.js')).read()
+    vis_js = vis_js.replace("PYTHON_PARAMS", json.dumps(params))
     vis_js = vis_js.replace("PYTHON_REQUIRE_PREFIX", require_prefix)
 
-    params_js = 'window.bertviz_params = %s' % json.dumps(params)
-    return vis_html, vis_js, params_js
+    return vis_html, vis_js
 
 def show(model, model_type, tokenizer, sentence_a, sentence_b=None, display_mode='dark', layer=None, head=None):
     from IPython.core.display import display, HTML, Javascript
     
-    vis_html, vis_js, params_js = get_raw(model, model_type, tokenizer, sentence_a, sentence_b, display_mode, layer, head)
+    vis_html, vis_js = get_raw(model, model_type, tokenizer, sentence_a, sentence_b, display_mode, layer, head)
 
     # require.js must be imported for Colab or JupyterLab:
     display(HTML('<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>'))
     display(HTML(vis_html))
-    display(Javascript(params_js))
     display(Javascript(vis_js))
 
 
